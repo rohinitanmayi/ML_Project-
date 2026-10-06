@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CustomerLens — Behaviour Segmentation Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:#0F1B33; --navy2:#1B2A4A; --blue:#2E5EAA; --accent:#3D8BFF; --bg:#F6F8FC; --card:#FFFFFF;
+  --gray:#5A6472; --line:#E4E9F2;
+  --hv:#3D8BFF; --dd:#F5A623; --fb:#2EC28B; --ob:#E05C6B;
+}
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; scroll-padding-top: calc(64px + env(safe-area-inset-top,0px)); }
+body {
+  margin:0; font-family:'Inter',sans-serif; background:var(--bg); color:var(--navy);
+  padding-bottom: env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg:#0B1220; --card:#141E33; --navy:#EAF0FF; --gray:#9FB0CC; --line:#233252; }
+}
+:root[data-theme="dark"] { --bg:#0B1220; --card:#141E33; --navy:#EAF0FF; --gray:#9FB0CC; --line:#233252; }
+
+/* NAV */
+nav {
+  position:sticky; top:0; z-index:50; background:var(--navy2);
+  padding-top:env(safe-area-inset-top,0px);
+  box-shadow:0 2px 12px rgba(0,0,0,.15);
+}
+.navwrap { max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:.85rem 1.3rem; }
+.brand { color:#fff; font-weight:800; font-size:1.05rem; display:flex; align-items:center; gap:.4rem; }
+.brand .dot { width:9px; height:9px; border-radius:50%; background:var(--accent); }
+.navlinks { display:flex; gap:.3rem; flex-wrap:wrap; }
+.navlinks button {
+  background:none; border:none; color:#B9C6E6; padding:.5rem .85rem; border-radius:8px;
+  font-size:.85rem; font-weight:600; cursor:pointer; font-family:inherit;
+}
+.navlinks button.active { background:rgba(255,255,255,.12); color:#fff; }
+.navlinks button:hover { color:#fff; }
+
+/* PAGES */
+.page { display:none; animation: fadein .25s ease; }
+.page.active { display:block; }
+@keyframes fadein { from{opacity:0;transform:translateY(6px);} to{opacity:1;transform:translateY(0);} }
+
+.wrap { max-width:1100px; margin:0 auto; padding:1.6rem 1.3rem 3rem; }
+
+/* HERO */
+.hero {
+  background: radial-gradient(circle at 20% 20%, #24345c, var(--navy) 70%);
+  color:#fff; padding:3.4rem 1.5rem 4.2rem; text-align:center;
+}
+.hero h1 { font-size:2rem; margin:0 0 .6rem; font-weight:800; }
+.hero p { color:#AFC3E8; max-width:600px; margin:0 auto 1.6rem; font-size:1rem; line-height:1.5; }
+.hero .cta { display:flex; gap:.8rem; justify-content:center; flex-wrap:wrap; }
+.btn {
+  border:none; padding:.75rem 1.5rem; border-radius:999px; font-weight:700; font-size:.88rem;
+  cursor:pointer; font-family:inherit;
+}
+.btn-primary { background:var(--accent); color:#fff; }
+.btn-ghost { background:rgba(255,255,255,.12); color:#fff; }
+
+.stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:.9rem; margin:-2.4rem auto 0; max-width:1100px; padding:0 1.3rem; position:relative; z-index:2; }
+.stat { background:var(--card); border-radius:14px; padding:1rem 1.1rem; box-shadow:0 8px 24px rgba(15,27,51,.12); }
+.stat .num { font-size:1.5rem; font-weight:800; color:var(--accent); }
+.stat .lbl { font-size:.75rem; color:var(--gray); margin-top:.2rem; }
+
+h2.sec { font-size:1.2rem; font-weight:700; margin:2rem 0 1rem; border-left:4px solid var(--accent); padding-left:.6rem; }
+.card { background:var(--card); border-radius:16px; padding:1.3rem; box-shadow:0 4px 16px rgba(15,27,51,.06); }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
+@media (max-width:800px){ .grid2{ grid-template-columns:1fr; } }
+
+.seg-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:1rem; }
+.seg-card { border-radius:14px; padding:1.1rem; color:#fff; }
+.seg-card h3 { margin:0 0 .3rem; font-size:1.02rem; }
+.seg-card .count { font-size:1.7rem; font-weight:800; }
+.seg-card .rows { margin-top:.7rem; font-size:.78rem; opacity:.92; line-height:1.7; }
+
+.legend { display:flex; flex-wrap:wrap; gap:.9rem; margin-top:.8rem; font-size:.8rem; color:var(--gray); }
+.legend span { display:inline-flex; align-items:center; gap:.35rem; }
+.legenddot { width:10px; height:10px; border-radius:50%; display:inline-block; }
+
+.tabbtns { display:flex; gap:.5rem; margin-bottom:1rem; flex-wrap:wrap; }
+.tabbtn { border:1px solid var(--line); background:var(--card); color:var(--navy); padding:.5rem 1rem; border-radius:999px; font-size:.82rem; cursor:pointer; font-weight:600; font-family:inherit; }
+.tabbtn.active { background:var(--navy2); color:#fff; border-color:var(--navy2); }
+.bar-row { display:flex; align-items:center; gap:.7rem; margin-bottom:.55rem; font-size:.82rem; }
+.bar-row .label { width:100px; flex-shrink:0; color:var(--gray); }
+.bar-track { flex:1; background:var(--line); border-radius:6px; height:10px; overflow:hidden; }
+.bar-fill { height:100%; border-radius:6px; background:var(--accent); }
+
+/* FORM / PREDICTOR PAGE */
+.formgrid { display:grid; grid-template-columns:1fr 1fr; gap:1.1rem; }
+@media (max-width:700px){ .formgrid{ grid-template-columns:1fr; } }
+.field { display:flex; flex-direction:column; gap:.4rem; }
+.field label { font-size:.82rem; font-weight:600; color:var(--gray); }
+.field .hint { font-size:.72rem; color:var(--gray); opacity:.8; }
+.field input[type=range] { width:100%; accent-color:var(--accent); }
+.field .valdisp { font-weight:700; color:var(--accent); font-size:.95rem; }
+.field select {
+  padding:.6rem .7rem; border-radius:8px; border:1px solid var(--line); background:var(--card); color:var(--navy);
+  font-family:inherit; font-size:.88rem;
+}
+.predict-btn { margin-top:1.6rem; width:100%; padding:.9rem; background:var(--navy2); color:#fff; border:none; border-radius:10px; font-weight:700; font-size:.95rem; cursor:pointer; }
+.predict-btn:hover { background:var(--accent); }
+
+.result-box { display:none; margin-top:1.6rem; border-radius:16px; padding:1.6rem; color:#fff; text-align:center; }
+.result-box.show { display:block; animation:fadein .3s ease; }
+.result-box .seg-name { font-size:1.5rem; font-weight:800; margin-bottom:.3rem; }
+.result-box .seg-sub { opacity:.9; font-size:.88rem; margin-bottom:1rem; }
+.confbar { background:rgba(255,255,255,.25); border-radius:6px; height:8px; overflow:hidden; margin:.3rem 0 .1rem; }
+.confbar-fill { height:100%; background:#fff; }
+.conf-row { display:flex; justify-content:space-between; font-size:.72rem; margin-top:.9rem; text-align:left; }
+.reco { margin-top:1.1rem; background:rgba(255,255,255,.14); border-radius:10px; padding:.8rem 1rem; font-size:.82rem; text-align:left; line-height:1.5; }
+
+footer { text-align:center; color:var(--gray); font-size:.78rem; padding:1.5rem; padding-bottom: calc(1.5rem + env(safe-area-inset-bottom,0px)); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="navwrap">
+    <div class="brand"><span class="dot"></span>CustomerLens</div>
+    <div class="navlinks" id="navlinks">
+      <button data-page="home" class="active">Home</button>
+      <button data-page="explore">Explore Data</button>
+      <button data-page="pipeline">PCA &amp; t-SNE</button>
+      <button data-page="predict">Segment Predictor</button>
+    </div>
+  </div>
+</nav>
+
+<!-- HOME PAGE -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <h1>Understand Every Customer, Instantly</h1>
+    <p>CustomerLens uses PCA and t-SNE to turn raw e-commerce behaviour data into clear, actionable customer segments — then lets you classify any customer in real time.</p>
+    <div class="cta">
+      <button class="btn btn-primary" onclick="goPage('predict')">Try the Segment Predictor →</button>
+      <button class="btn btn-ghost" onclick="goPage('explore')">Explore the Data</button>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="num">1500</div><div class="lbl">Customers analyzed</div></div>
+    <div class="stat"><div class="num">9</div><div class="lbl">Behavioural features</div></div>
+    <div class="stat"><div class="num">8</div><div class="lbl">PCA components (90% var.)</div></div>
+    <div class="stat"><div class="num">4</div><div class="lbl">Segments discovered</div></div>
+  </div>
+  <div class="wrap">
+    <h2 class="sec">The Four Segments</h2>
+    <div class="seg-cards" id="segCardsHome"></div>
+  </div>
+</div>
+
+<!-- EXPLORE PAGE -->
+<div class="page" id="page-explore">
+  <div class="wrap">
+    <h2 class="sec" style="margin-top:1.6rem;">t-SNE Cluster Map</h2>
+    <div class="card">
+      <div id="tsneChart"></div>
+      <div class="legend" id="tsneLegend"></div>
+    </div>
+
+    <h2 class="sec">Feature Comparison by Segment</h2>
+    <div class="card">
+      <div class="tabbtns" id="featureTabs"></div>
+      <div id="featureBars"></div>
+    </div>
+
+    <h2 class="sec">Categorical Breakdown</h2>
+    <div class="grid2">
+      <div class="card">
+        <h3 style="margin-top:0;font-size:.95rem;color:var(--gray);">Device Preference</h3>
+        <div id="deviceBars"></div>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0;font-size:.95rem;color:var(--gray);">Category Preference</h3>
+        <div id="categoryBars"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PIPELINE PAGE -->
+<div class="page" id="page-pipeline">
+  <div class="wrap">
+    <h2 class="sec" style="margin-top:1.6rem;">PCA — Explained Variance</h2>
+    <div class="card">
+      <div id="pcaChart"></div>
+      <p style="font-size:.85rem;color:var(--gray);margin-bottom:0;">Components needed to retain 90% of the dataset's total variance: <strong>8</strong> out of 13 possible.</p>
+    </div>
+
+    <h2 class="sec">Pipeline Overview</h2>
+    <div class="card">
+      <ol style="font-size:.9rem;line-height:2;color:var(--navy);padding-left:1.2rem;">
+        <li>Clean missing values (median imputation)</li>
+        <li>One-hot encode categorical features (device, category)</li>
+        <li>Standardize all features (zero mean, unit variance)</li>
+        <li>Run PCA → reduce to 8 components (90% variance retained)</li>
+        <li>Run t-SNE on PCA output → 2D embedding preserving local structure</li>
+        <li>Run KMeans (k=4) on PCA-space → assign cluster labels</li>
+        <li>Profile clusters → assign business-meaningful segment names</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<!-- PREDICT PAGE -->
+<div class="page" id="page-predict">
+  <div class="wrap">
+    <h2 class="sec" style="margin-top:1.6rem;">Segment Predictor</h2>
+    <div class="card">
+      <p style="font-size:.85rem;color:var(--gray);margin-top:0;">Enter a customer's behaviour profile below. The predictor finds the nearest of the four segments discovered by the clustering model (nearest-centroid, standardized feature space).</p>
+      <div class="formgrid">
+        <div class="field">
+          <label>Purchase Frequency <span class="valdisp" id="val_purchase_frequency">10</span> / month</label>
+          <input type="range" id="purchase_frequency" min="0" max="29" step="1" value="10">
+          <span class="hint">How many times has this customer purchased in the last month?</span>
+        </div>
+        <div class="field">
+          <label>Average Order Value $<span class="valdisp" id="val_avg_order_value">50</span></label>
+          <input type="range" id="avg_order_value" min="7" max="182" step="1" value="50">
+          <span class="hint">Typical amount spent per order</span>
+        </div>
+        <div class="field">
+          <label>Browsing Time <span class="valdisp" id="val_browsing_time_minutes">28</span> min/session</label>
+          <input type="range" id="browsing_time_minutes" min="2" max="68" step="1" value="28">
+          <span class="hint">Average time spent browsing per visit</span>
+        </div>
+        <div class="field">
+          <label>Discount Usage Rate <span class="valdisp" id="val_discount_usage_rate">0.25</span></label>
+          <input type="range" id="discount_usage_rate" min="0" max="1" step="0.01" value="0.25">
+          <span class="hint">Fraction of orders using a discount/coupon</span>
+        </div>
+        <div class="field">
+          <label>Cart Abandonment Rate <span class="valdisp" id="val_cart_abandonment_rate">0.35</span></label>
+          <input type="range" id="cart_abandonment_rate" min="0.05" max="0.85" step="0.01" value="0.35">
+          <span class="hint">Fraction of carts started but not purchased</span>
+        </div>
+        <div class="field">
+          <label>Days Since Last Purchase <span class="valdisp" id="val_days_since_last_purchase">15</span></label>
+          <input type="range" id="days_since_last_purchase" min="0" max="88" step="1" value="15">
+          <span class="hint">How recently the customer last bought something</span>
+        </div>
+      </div>
+      <button class="predict-btn" onclick="predictSegment()">Predict Customer Segment</button>
+
+      <div class="result-box" id="resultBox">
+        <div class="seg-name" id="resSegName"></div>
+        <div class="seg-sub" id="resSegSub"></div>
+        <div id="confRows"></div>
+        <div class="reco" id="resReco"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>CustomerLens &middot; Customer Behaviour Data Visualization Using PCA and t-SNE &middot; ML Course Project, KLH University</footer>
+
+<script>
+const tsnePoints = [{"x": -43.71, "y": -18.22, "cluster": "Frequent Buyer"}, {"x": -23.45, "y": 2.09, "cluster": "High-Value Customer"}, {"x": -16.22, "y": -35.55, "cluster": "High-Value Customer"}, {"x": -27.61, "y": 14.47, "cluster": "High-Value Customer"}, {"x": -6.74, "y": 24.68, "cluster": "High-Value Customer"}, {"x": 33.12, "y": 9.16, "cluster": "Occasional Browser"}, {"x": -16.08, "y": -38.31, "cluster": "High-Value Customer"}, {"x": 6.67, "y": -8.49, "cluster": "Occasional Browser"}, {"x": -6.8, "y": -7.24, "cluster": "Frequent Buyer"}, {"x": 21.71, "y": -2.51, "cluster": "Discount-Driven Shopper"}, {"x": -4.33, "y": -9.89, "cluster": "Frequent Buyer"}, {"x": 0.78, "y": 44.32, "cluster": "Occasional Browser"}, {"x": 31.79, "y": 9.77, "cluster": "Occasional Browser"}, {"x": -1.09, "y": 46.88, "cluster": "Occasional Browser"}, {"x": -1.0, "y": 46.31, "cluster": "Occasional Browser"}, {"x": -27.39, "y": 14.35, "cluster": "High-Value Customer"}, {"x": -29.98, "y": 23.13, "cluster": "Frequent Buyer"}, {"x": -12.27, "y": 4.82, "cluster": "Frequent Buyer"}, {"x": -3.45, "y": -41.37, "cluster": "Frequent Buyer"}, {"x": 31.94, "y": 9.84, "cluster": "Occasional Browser"}, {"x": -25.5, "y": -12.74, "cluster": "Frequent Buyer"}, {"x": -31.13, "y": -6.17, "cluster": "High-Value Customer"}, {"x": 43.0, "y": -5.8, "cluster": "Occasional Browser"}, {"x": -24.19, "y": -13.35, "cluster": "Frequent Buyer"}, {"x": 22.28, "y": 0.12, "cluster": "Discount-Driven Shopper"}, {"x": -28.01, "y": 21.53, "cluster": "Frequent Buyer"}, {"x": -16.67, "y": -36.09, "cluster": "High-Value Customer"}, {"x": 33.12, "y": 19.6, "cluster": "Occasional Browser"}, {"x": -30.2, "y": 26.04, "cluster": "Frequent Buyer"}, {"x": 16.43, "y": 25.55, "cluster": "Discount-Driven Shopper"}, {"x": 6.3, "y": -10.71, "cluster": "Occasional Browser"}, {"x": -9.18, "y": -26.4, "cluster": "Frequent Buyer"}, {"x": 24.67, "y": -16.47, "cluster": "Occasional Browser"}, {"x": -4.66, "y": 41.07, "cluster": "Discount-Driven Shopper"}, {"x": -41.64, "y": -13.32, "cluster": "Frequent Buyer"}, {"x": 34.04, "y": 9.48, "cluster": "Occasional Browser"}, {"x": -27.65, "y": 23.68, "cluster": "Frequent Buyer"}, {"x": -24.69, "y": -12.3, "cluster": "Frequent Buyer"}, {"x": -27.14, "y": 15.2, "cluster": "High-Value Customer"}, {"x": -28.04, "y": 23.74, "cluster": "Frequent Buyer"}, {"x": -41.17, "y": -14.11, "cluster": "Frequent Buyer"}, {"x": -4.36, "y": -9.96, "cluster": "Frequent Buyer"}, {"x": -5.0, "y": -40.95, "cluster": "Frequent Buyer"}, {"x": -7.72, "y": -11.22, "cluster": "High-Value Customer"}, {"x": 7.05, "y": -8.35, "cluster": "Occasional Browser"}, {"x": -16.17, "y": -35.78, "cluster": "High-Value Customer"}, {"x": -9.34, "y": 28.4, "cluster": "Frequent Buyer"}, {"x": 16.99, "y": 16.58, "cluster": "Discount-Driven Shopper"}, {"x": 1.88, "y": 12.13, "cluster": "Discount-Driven Shopper"}, {"x": 55.03, "y": -1.33, "cluster": "Occasional Browser"}, {"x": -6.45, "y": -7.27, "cluster": "Frequent Buyer"}, {"x": -36.75, "y": -5.23, "cluster": "High-Value Customer"}, {"x": 8.71, "y": -21.08, "cluster": "Occasional Browser"}, {"x": 9.62, "y": -3.41, "cluster": "Occasional Browser"}, {"x": 14.44, "y": 24.4, "cluster": "Discount-Driven Shopper"}, {"x": -3.15, "y": 39.9, "cluster": "Discount-Driven Shopper"}, {"x": 52.86, "y": 1.38, "cluster": "Occasional Browser"}, {"x": -37.06, "y": 10.96, "cluster": "High-Value Customer"}, {"x": 53.6, "y": 4.76, "cluster": "Occasional Browser"}, {"x": -8.2, "y": 28.74, "cluster": "Frequent Buyer"}, {"x": 53.41, "y": -1.2, "cluster": "Occasional Browser"}, {"x": 0.49, "y": -5.1, "cluster": "Discount-Driven Shopper"}, {"x": -37.17, "y": 10.48, "cluster": "High-Value Customer"}, {"x": 54.68, "y": 5.61, "cluster": "Occasional Browser"}, {"x": -0.03, "y": -5.49, "cluster": "Discount-Driven Shopper"}, {"x": -44.6, "y": -16.02, "cluster": "Frequent Buyer"}, {"x": 0.77, "y": -8.52, "cluster": "Discount-Driven Shopper"}, {"x": -28.83, "y": 25.35, "cluster": "Frequent Buyer"}, {"x": 0.45, "y": 43.16, "cluster": "Occasional Browser"}, {"x": 33.62, "y": 9.58, "cluster": "Occasional Browser"}, {"x": -17.11, "y": -36.45, "cluster": "High-Value Customer"}, {"x": 41.4, "y": -4.69, "cluster": "Occasional Browser"}, {"x": 1.66, "y": 11.57, "cluster": "Discount-Driven Shopper"}, {"x": 24.6, "y": -16.71, "cluster": "Occasional Browser"}, {"x": 34.28, "y": -19.14, "cluster": "Occasional Browser"}, {"x": -28.91, "y": 25.81, "cluster": "Frequent Buyer"}, {"x": -40.95, "y": -13.1, "cluster": "Frequent Buyer"}, {"x": 17.07, "y": 15.33, "cluster": "Discount-Driven Shopper"}, {"x": 52.02, "y": 0.12, "cluster": "Occasional Browser"}, {"x": 42.25, "y": -3.84, "cluster": "Occasional Browser"}, {"x": 54.58, "y": 2.19, "cluster": "Occasional Browser"}, {"x": 36.11, "y": 17.24, "cluster": "Occasional Browser"}, {"x": 15.28, "y": 24.6, "cluster": "Discount-Driven Shopper"}, {"x": -9.75, "y": -26.6, "cluster": "Frequent Buyer"}, {"x": 25.18, "y": -15.09, "cluster": "Occasional Browser"}, {"x": -20.49, "y": 6.42, "cluster": "High-Value Customer"}, {"x": 8.12, "y": -22.44, "cluster": "Occasional Browser"}, {"x": 20.58, "y": -2.94, "cluster": "Discount-Driven Shopper"}, {"x": -25.23, "y": -12.32, "cluster": "Frequent Buyer"}, {"x": 34.46, "y": 18.59, "cluster": "Occasional Browser"}, {"x": -8.27, "y": 32.09, "cluster": "Frequent Buyer"}, {"x": -20.99, "y": -2.69, "cluster": "Frequent Buyer"}, {"x": 54.69, "y": 3.81, "cluster": "Occasional Browser"}, {"x": 55.82, "y": 3.12, "cluster": "Occasional Browser"}, {"x": -34.33, "y": 9.59, "cluster": "High-Value Customer"}, {"x": 2.3, "y": 11.41, "cluster": "Discount-Driven Shopper"}, {"x": 21.3, "y": -0.74, "cluster": "Discount-Driven Shopper"}, {"x": 17.54, "y": 15.47, "cluster": "Discount-Driven Shopper"}, {"x": 14.87, "y": 24.46, "cluster": "Discount-Driven Shopper"}, {"x": -29.6, "y": 26.05, "cluster": "Frequent Buyer"}, {"x": -38.15, "y": -6.66, "cluster": "High-Value Customer"}, {"x": 18.88, "y": -32.69, "cluster": "Occasional Browser"}, {"x": 0.09, "y": -5.38, "cluster": "Discount-Driven Shopper"}, {"x": -41.24, "y": 11.94, "cluster": "Frequent Buyer"}, {"x": 17.6, "y": 3.88, "cluster": "Discount-Driven Shopper"}, {"x": -12.53, "y": -29.49, "cluster": "High-Value Customer"}, {"x": 5.4, "y": -10.38, "cluster": "Occasional Browser"}, {"x": 23.12, "y": -0.9, "cluster": "Discount-Driven Shopper"}, {"x": -27.82, "y": 21.85, "cluster": "Frequent Buyer"}, {"x": 9.07, "y": -23.38, "cluster": "Occasional Browser"}, {"x": -27.94, "y": 21.51, "cluster": "Frequent Buyer"}, {"x": 0.57, "y": -4.94, "cluster": "Discount-Driven Shopper"}, {"x": -9.29, "y": -6.97, "cluster": "High-Value Customer"}, {"x": 32.64, "y": -19.68, "cluster": "Occasional Browser"}, {"x": 17.68, "y": -35.61, "cluster": "Occasional Browser"}, {"x": -5.22, "y": 41.0, "cluster": "Discount-Driven Shopper"}, {"x": 6.69, "y": 8.19, "cluster": "Discount-Driven Shopper"}, {"x": 32.22, "y": 18.16, "cluster": "Occasional Browser"}, {"x": -24.63, "y": -13.87, "cluster": "Frequent Buyer"}, {"x": -20.96, "y": 6.58, "cluster": "High-Value Customer"}, {"x": -37.28, "y": -6.99, "cluster": "High-Value Customer"}, {"x": 15.55, "y": 23.34, "cluster": "Discount-Driven Shopper"}, {"x": -7.13, "y": -11.45, "cluster": "Frequent Buyer"}, {"x": -33.45, "y": 9.15, "cluster": "High-Value Customer"}, {"x": -41.26, "y": -14.22, "cluster": "Frequent Buyer"}, {"x": 11.5, "y": 26.2, "cluster": "Discount-Driven Shopper"}, {"x": 19.45, "y": -38.12, "cluster": "Occasional Browser"}, {"x": -27.62, "y": 14.84, "cluster": "High-Value Customer"}, {"x": -30.51, "y": 27.27, "cluster": "Frequent Buyer"}, {"x": -41.43, "y": 11.8, "cluster": "Frequent Buyer"}, {"x": 33.18, "y": 9.71, "cluster": "Occasional Browser"}, {"x": 42.98, "y": -5.03, "cluster": "Occasional Browser"}, {"x": 32.26, "y": 9.6, "cluster": "Occasional Browser"}, {"x": -39.35, "y": 10.56, "cluster": "Frequent Buyer"}, {"x": -44.29, "y": -16.88, "cluster": "Frequent Buyer"}, {"x": 18.08, "y": 15.9, "cluster": "Discount-Driven Shopper"}, {"x": -11.85, "y": 30.17, "cluster": "High-Value Customer"}, {"x": -8.8, "y": -27.02, "cluster": "Frequent Buyer"}, {"x": -34.56, "y": 9.32, "cluster": "High-Value Customer"}, {"x": 2.57, "y": 11.61, "cluster": "Discount-Driven Shopper"}, {"x": -43.59, "y": -17.08, "cluster": "Frequent Buyer"}, {"x": -30.98, "y": -6.49, "cluster": "High-Value Customer"}, {"x": 20.63, "y": -2.3, "cluster": "Discount-Driven Shopper"}, {"x": 4.15, "y": 13.4, "cluster": "Discount-Driven Shopper"}, {"x": 15.49, "y": 23.5, "cluster": "Discount-Driven Shopper"}, {"x": 51.68, "y": 3.46, "cluster": "Occasional Browser"}, {"x": 53.01, "y": -0.45, "cluster": "Occasional Browser"}, {"x": 5.2, "y": -10.31, "cluster": "Occasional Browser"}, {"x": 17.49, "y": 4.53, "cluster": "Discount-Driven Shopper"}, {"x": 18.26, "y": 15.8, "cluster": "Discount-Driven Shopper"}, {"x": -21.21, "y": 6.41, "cluster": "High-Value Customer"}, {"x": -28.03, "y": 20.44, "cluster": "Frequent Buyer"}, {"x": 53.95, "y": -1.11, "cluster": "Occasional Browser"}, {"x": -13.76, "y": 5.51, "cluster": "Frequent Buyer"}, {"x": -4.45, "y": -40.6, "cluster": "Frequent Buyer"}, {"x": 31.12, "y": 18.07, "cluster": "Occasional Browser"}, {"x": -42.55, "y": -16.03, "cluster": "Frequent Buyer"}, {"x": -22.59, "y": 0.48, "cluster": "High-Value Customer"}, {"x": -30.16, "y": 27.03, "cluster": "Frequent Buyer"}, {"x": -19.75, "y": -3.21, "cluster": "Frequent Buyer"}, {"x": 24.02, "y": -15.54, "cluster": "Occasional Browser"}, {"x": 7.35, "y": -24.04, "cluster": "Occasional Browser"}, {"x": 2.61, "y": 13.11, "cluster": "Discount-Driven Shopper"}, {"x": -34.51, "y": 9.87, "cluster": "High-Value Customer"}, {"x": -1.59, "y": -41.84, "cluster": "Frequent Buyer"}, {"x": -39.24, "y": 11.35, "cluster": "Frequent Buyer"}, {"x": -12.22, "y": 4.66, "cluster": "Frequent Buyer"}, {"x": 21.82, "y": -2.41, "cluster": "Discount-Driven Shopper"}, {"x": 34.75, "y": -18.91, "cluster": "Occasional Browser"}, {"x": -30.75, "y": -6.54, "cluster": "High-Value Customer"}, {"x": 14.01, "y": 24.13, "cluster": "Discount-Driven Shopper"}, {"x": 7.59, "y": 8.46, "cluster": "Discount-Driven Shopper"}, {"x": -33.7, "y": 9.34, "cluster": "High-Value Customer"}, {"x": -20.99, "y": 6.12, "cluster": "High-Value Customer"}, {"x": -1.47, "y": -42.67, "cluster": "Frequent Buyer"}, {"x": 52.92, "y": 0.98, "cluster": "Occasional Browser"}, {"x": 22.12, "y": -1.32, "cluster": "Discount-Driven Shopper"}, {"x": -7.56, "y": 29.03, "cluster": "Frequent Buyer"}, {"x": 21.36, "y": -1.61, "cluster": "Discount-Driven Shopper"}, {"x": -4.12, "y": -40.77, "cluster": "Frequent Buyer"}, {"x": 24.12, "y": -15.95, "cluster": "Occasional Browser"}, {"x": -27.91, "y": 16.82, "cluster": "High-Value Customer"}, {"x": -20.4, "y": -3.6, "cluster": "Frequent Buyer"}, {"x": 32.77, "y": 18.17, "cluster": "Occasional Browser"}, {"x": -10.46, "y": -9.49, "cluster": "High-Value Customer"}, {"x": -29.6, "y": 27.31, "cluster": "Frequent Buyer"}, {"x": -27.87, "y": 15.63, "cluster": "High-Value Customer"}, {"x": -9.67, "y": -27.03, "cluster": "Frequent Buyer"}, {"x": 23.66, "y": -16.73, "cluster": "Occasional Browser"}, {"x": 12.42, "y": 25.53, "cluster": "Discount-Driven Shopper"}, {"x": 20.45, "y": -36.59, "cluster": "Occasional Browser"}, {"x": 14.02, "y": 26.15, "cluster": "Discount-Driven Shopper"}, {"x": 34.99, "y": -17.87, "cluster": "Occasional Browser"}, {"x": 16.43, "y": 24.95, "cluster": "Discount-Driven Shopper"}, {"x": -8.98, "y": 28.47, "cluster": "Frequent Buyer"}, {"x": 17.45, "y": 4.53, "cluster": "Discount-Driven Shopper"}, {"x": -30.66, "y": 26.39, "cluster": "Frequent Buyer"}, {"x": 3.21, "y": 12.73, "cluster": "Discount-Driven Shopper"}, {"x": -6.45, "y": -7.23, "cluster": "Frequent Buyer"}, {"x": -9.18, "y": -27.08, "cluster": "Frequent Buyer"}, {"x": 40.34, "y": -3.8, "cluster": "Occasional Browser"}, {"x": -11.07, "y": -28.1, "cluster": "Frequent Buyer"}, {"x": 22.67, "y": -15.46, "cluster": "Occasional Browser"}, {"x": -26.38, "y": -11.21, "cluster": "Frequent Buyer"}, {"x": 31.87, "y": 18.14, "cluster": "Occasional Browser"}, {"x": 6.39, "y": 8.8, "cluster": "Discount-Driven Shopper"}, {"x": -10.45, "y": -28.03, "cluster": "Frequent Buyer"}, {"x": 14.06, "y": 26.54, "cluster": "Discount-Driven Shopper"}, {"x": -6.97, "y": -9.15, "cluster": "Frequent Buyer"}, {"x": -15.73, "y": 5.91, "cluster": "Frequent Buyer"}, {"x": -12.17, "y": -29.1, "cluster": "High-Value Customer"}, {"x": -1.38, "y": 46.01, "cluster": "Occasional Browser"}, {"x": 34.1, "y": -20.17, "cluster": "Occasional Browser"}, {"x": -4.36, "y": -9.95, "cluster": "Frequent Buyer"}, {"x": 0.56, "y": -8.51, "cluster": "Discount-Driven Shopper"}, {"x": 33.33, "y": 18.53, "cluster": "Occasional Browser"}, {"x": -37.52, "y": -5.11, "cluster": "High-Value Customer"}, {"x": 54.72, "y": 1.02, "cluster": "Occasional Browser"}, {"x": 2.49, "y": 12.78, "cluster": "Discount-Driven Shopper"}, {"x": -38.8, "y": 10.65, "cluster": "Frequent Buyer"}, {"x": -2.88, "y": -41.09, "cluster": "Frequent Buyer"}, {"x": -23.15, "y": 1.19, "cluster": "High-Value Customer"}, {"x": -27.34, "y": 15.53, "cluster": "High-Value Customer"}, {"x": 15.91, "y": 12.08, "cluster": "Discount-Driven Shopper"}, {"x": 55.72, "y": 0.62, "cluster": "Occasional Browser"}, {"x": -43.02, "y": -15.22, "cluster": "Frequent Buyer"}, {"x": -10.54, "y": -9.47, "cluster": "High-Value Customer"}, {"x": -5.56, "y": -8.87, "cluster": "Frequent Buyer"}, {"x": -12.01, "y": 30.34, "cluster": "High-Value Customer"}, {"x": 1.15, "y": 44.07, "cluster": "Occasional Browser"}, {"x": -37.65, "y": -6.2, "cluster": "High-Value Customer"}, {"x": 15.36, "y": 11.71, "cluster": "Discount-Driven Shopper"}, {"x": -10.52, "y": -9.48, "cluster": "High-Value Customer"}, {"x": -29.99, "y": 22.27, "cluster": "Frequent Buyer"}, {"x": 1.78, "y": 12.05, "cluster": "Discount-Driven Shopper"}, {"x": -21.08, "y": -1.82, "cluster": "Frequent Buyer"}, {"x": 17.62, "y": 3.83, "cluster": "Discount-Driven Shopper"}, {"x": -6.7, "y": -7.26, "cluster": "Frequent Buyer"}, {"x": 51.26, "y": 2.71, "cluster": "Occasional Browser"}, {"x": 54.85, "y": 4.16, "cluster": "Occasional Browser"}, {"x": 8.37, "y": -24.35, "cluster": "Occasional Browser"}, {"x": 20.98, "y": -0.9, "cluster": "Discount-Driven Shopper"}, {"x": 23.87, "y": -16.83, "cluster": "Occasional Browser"}, {"x": 18.75, "y": -34.32, "cluster": "Occasional Browser"}, {"x": -44.2, "y": -16.27, "cluster": "Frequent Buyer"}, {"x": -2.15, "y": -41.12, "cluster": "Frequent Buyer"}, {"x": -1.94, "y": 46.8, "cluster": "Occasional Browser"}, {"x": -37.48, "y": 10.92, "cluster": "Frequent Buyer"}, {"x": -30.21, "y": -6.41, "cluster": "High-Value Customer"}, {"x": -15.8, "y": -35.7, "cluster": "High-Value Customer"}, {"x": -27.97, "y": 20.38, "cluster": "Frequent Buyer"}, {"x": 3.08, "y": 11.45, "cluster": "Discount-Driven Shopper"}, {"x": -20.99, "y": 6.65, "cluster": "High-Value Customer"}, {"x": -23.11, "y": 0.94, "cluster": "High-Value Customer"}, {"x": 3.39, "y": -3.11, "cluster": "Discount-Driven Shopper"}, {"x": -27.14, "y": 15.7, "cluster": "High-Value Customer"}, {"x": -5.14, "y": 41.41, "cluster": "Discount-Driven Shopper"}, {"x": 19.93, "y": -33.35, "cluster": "Occasional Browser"}, {"x": -6.67, "y": 24.66, "cluster": "Frequent Buyer"}, {"x": -5.23, "y": -41.04, "cluster": "Frequent Buyer"}, {"x": 41.09, "y": -4.75, "cluster": "Occasional Browser"}, {"x": 53.72, "y": 4.43, "cluster": "Occasional Browser"}, {"x": 23.39, "y": -13.99, "cluster": "Occasional Browser"}, {"x": 17.59, "y": -34.13, "cluster": "Occasional Browser"}, {"x": 9.18, "y": -24.96, "cluster": "Occasional Browser"}, {"x": 21.34, "y": -0.96, "cluster": "Discount-Driven Shopper"}, {"x": 24.27, "y": -16.45, "cluster": "Occasional Browser"}, {"x": 32.57, "y": 16.47, "cluster": "Occasional Browser"}, {"x": -12.6, "y": 6.13, "cluster": "Frequent Buyer"}, {"x": 53.68, "y": 1.63, "cluster": "Occasional Browser"}, {"x": -21.01, "y": -1.81, "cluster": "Frequent Buyer"}, {"x": 16.01, "y": 25.01, "cluster": "Discount-Driven Shopper"}, {"x": 9.62, "y": -3.39, "cluster": "Occasional Browser"}, {"x": 34.92, "y": 17.67, "cluster": "Occasional Browser"}, {"x": 20.8, "y": -35.36, "cluster": "Occasional Browser"}, {"x": -39.1, "y": -7.83, "cluster": "High-Value Customer"}, {"x": 21.74, "y": -0.8, "cluster": "Discount-Driven Shopper"}, {"x": 6.63, "y": 8.08, "cluster": "Discount-Driven Shopper"}, {"x": 16.39, "y": 4.11, "cluster": "Discount-Driven Shopper"}, {"x": 0.49, "y": -8.52, "cluster": "Discount-Driven Shopper"}, {"x": -8.27, "y": 28.71, "cluster": "Frequent Buyer"}, {"x": 17.87, "y": -36.53, "cluster": "Occasional Browser"}, {"x": 34.84, "y": 17.06, "cluster": "Occasional Browser"}, {"x": -4.36, "y": -40.7, "cluster": "Frequent Buyer"}, {"x": -24.57, "y": -12.75, "cluster": "Frequent Buyer"}, {"x": 55.17, "y": 4.05, "cluster": "Occasional Browser"}, {"x": -20.94, "y": 6.07, "cluster": "High-Value Customer"}, {"x": -43.43, "y": -16.76, "cluster": "Frequent Buyer"}, {"x": -5.12, "y": 41.34, "cluster": "Discount-Driven Shopper"}, {"x": 24.52, "y": -15.35, "cluster": "Occasional Browser"}, {"x": -28.56, "y": 15.73, "cluster": "High-Value Customer"}, {"x": -30.31, "y": -6.4, "cluster": "High-Value Customer"}, {"x": -20.01, "y": -3.07, "cluster": "Frequent Buyer"}, {"x": -11.94, "y": 30.16, "cluster": "High-Value Customer"}, {"x": -26.36, "y": -12.38, "cluster": "Frequent Buyer"}, {"x": -36.68, "y": -4.54, "cluster": "High-Value Customer"}, {"x": -38.11, "y": -6.37, "cluster": "High-Value Customer"}, {"x": -1.61, "y": -42.45, "cluster": "Frequent Buyer"}, {"x": 34.51, "y": -19.06, "cluster": "Occasional Browser"}, {"x": -19.87, "y": -3.24, "cluster": "Frequent Buyer"}, {"x": -14.42, "y": 6.56, "cluster": "Frequent Buyer"}, {"x": 23.71, "y": -14.12, "cluster": "Occasional Browser"}, {"x": 32.08, "y": 17.76, "cluster": "Occasional Browser"}, {"x": -15.36, "y": 5.31, "cluster": "Frequent Buyer"}, {"x": 5.8, "y": -6.95, "cluster": "Occasional Browser"}, {"x": -4.81, "y": 41.36, "cluster": "Discount-Driven Shopper"}, {"x": -11.81, "y": -29.09, "cluster": "High-Value Customer"}, {"x": 15.89, "y": 23.62, "cluster": "Discount-Driven Shopper"}, {"x": -13.63, "y": -30.85, "cluster": "High-Value Customer"}, {"x": -37.91, "y": 10.67, "cluster": "Frequent Buyer"}, {"x": -5.62, "y": -40.4, "cluster": "Frequent Buyer"}, {"x": 17.85, "y": 15.76, "cluster": "Discount-Driven Shopper"}, {"x": -3.26, "y": -41.76, "cluster": "Frequent Buyer"}, {"x": -9.53, "y": -27.34, "cluster": "Frequent Buyer"}, {"x": 12.94, "y": 24.46, "cluster": "Discount-Driven Shopper"}, {"x": -29.98, "y": 24.72, "cluster": "Frequent Buyer"}, {"x": 17.5, "y": 15.18, "cluster": "Discount-Driven Shopper"}, {"x": 34.47, "y": -18.07, "cluster": "Occasional Browser"}, {"x": 11.17, "y": 19.38, "cluster": "Discount-Driven Shopper"}, {"x": -0.65, "y": -41.92, "cluster": "Frequent Buyer"}, {"x": 9.12, "y": -8.32, "cluster": "Occasional Browser"}, {"x": -24.91, "y": -12.55, "cluster": "Frequent Buyer"}, {"x": 35.01, "y": 17.04, "cluster": "Occasional Browser"}, {"x": 33.04, "y": 16.54, "cluster": "Occasional Browser"}, {"x": 35.41, "y": 18.84, "cluster": "Occasional Browser"}, {"x": -21.27, "y": -2.3, "cluster": "Frequent Buyer"}, {"x": -4.32, "y": -9.92, "cluster": "Frequent Buyer"}, {"x": -41.54, "y": -11.95, "cluster": "Frequent Buyer"}, {"x": -13.43, "y": 6.32, "cluster": "Frequent Buyer"}, {"x": 19.32, "y": -35.89, "cluster": "Occasional Browser"}, {"x": -5.59, "y": 41.04, "cluster": "Discount-Driven Shopper"}, {"x": -9.11, "y": 31.43, "cluster": "Frequent Buyer"}, {"x": -4.48, "y": 40.94, "cluster": "Discount-Driven Shopper"}, {"x": 8.85, "y": -21.23, "cluster": "Occasional Browser"}, {"x": 22.76, "y": 0.36, "cluster": "Discount-Driven Shopper"}, {"x": 1.54, "y": 43.77, "cluster": "Occasional Browser"}, {"x": 55.05, "y": 4.32, "cluster": "Occasional Browser"}, {"x": -15.32, "y": 6.33, "cluster": "Frequent Buyer"}, {"x": -0.75, "y": 46.71, "cluster": "Occasional Browser"}, {"x": 5.65, "y": -10.42, "cluster": "Occasional Browser"}, {"x": 22.38, "y": -15.55, "cluster": "Occasional Browser"}, {"x": -13.42, "y": 5.46, "cluster": "Frequent Buyer"}, {"x": -1.47, "y": -42.22, "cluster": "Frequent Buyer"}, {"x": -6.67, "y": -9.22, "cluster": "Frequent Buyer"}, {"x": 19.58, "y": -35.95, "cluster": "Occasional Browser"}, {"x": 43.35, "y": -5.43, "cluster": "Occasional Browser"}, {"x": 22.16, "y": -0.51, "cluster": "Discount-Driven Shopper"}, {"x": -28.04, "y": 20.42, "cluster": "Frequent Buyer"}, {"x": -5.27, "y": 40.61, "cluster": "Discount-Driven Shopper"}, {"x": -30.17, "y": 26.3, "cluster": "Frequent Buyer"}, {"x": 53.62, "y": -1.54, "cluster": "Occasional Browser"}, {"x": 13.44, "y": 24.47, "cluster": "Discount-Driven Shopper"}, {"x": -21.93, "y": 6.42, "cluster": "High-Value Customer"}, {"x": -44.58, "y": -15.84, "cluster": "Frequent Buyer"}, {"x": -2.77, "y": 40.28, "cluster": "Discount-Driven Shopper"}, {"x": 21.63, "y": -0.68, "cluster": "Discount-Driven Shopper"}, {"x": 2.7, "y": -2.79, "cluster": "Discount-Driven Shopper"}, {"x": -21.03, "y": 6.29, "cluster": "High-Value Customer"}, {"x": -27.19, "y": 13.76, "cluster": "High-Value Customer"}, {"x": -21.32, "y": 6.57, "cluster": "High-Value Customer"}, {"x": 0.09, "y": -5.39, "cluster": "Discount-Driven Shopper"}, {"x": -30.33, "y": -6.48, "cluster": "High-Value Customer"}, {"x": -21.98, "y": 6.23, "cluster": "High-Value Customer"}, {"x": -13.15, "y": 5.32, "cluster": "Frequent Buyer"}, {"x": -12.96, "y": 4.91, "cluster": "Frequent Buyer"}, {"x": -4.94, "y": 41.21, "cluster": "Discount-Driven Shopper"}, {"x": -1.8, "y": -41.76, "cluster": "Frequent Buyer"}, {"x": -30.06, "y": 26.85, "cluster": "Frequent Buyer"}, {"x": -29.75, "y": 23.33, "cluster": "Frequent Buyer"}, {"x": 54.81, "y": -1.47, "cluster": "Occasional Browser"}, {"x": -9.54, "y": 31.34, "cluster": "Frequent Buyer"}, {"x": 12.02, "y": 25.99, "cluster": "Discount-Driven Shopper"}, {"x": 10.32, "y": 20.34, "cluster": "Discount-Driven Shopper"}, {"x": -39.92, "y": 10.3, "cluster": "Frequent Buyer"}, {"x": 32.69, "y": 9.67, "cluster": "Occasional Browser"}, {"x": 19.27, "y": -37.76, "cluster": "Occasional Browser"}, {"x": -1.71, "y": 47.14, "cluster": "Occasional Browser"}, {"x": -40.86, "y": 11.29, "cluster": "Frequent Buyer"}, {"x": -12.6, "y": 6.08, "cluster": "Frequent Buyer"}, {"x": -19.99, "y": -2.44, "cluster": "Frequent Buyer"}, {"x": -11.69, "y": 5.86, "cluster": "Frequent Buyer"}, {"x": 22.43, "y": -2.23, "cluster": "Discount-Driven Shopper"}, {"x": 19.55, "y": -36.38, "cluster": "Occasional Browser"}, {"x": -9.8, "y": -26.1, "cluster": "Frequent Buyer"}, {"x": -39.62, "y": 10.52, "cluster": "Frequent Buyer"}, {"x": 3.1, "y": -3.0, "cluster": "Discount-Driven Shopper"}, {"x": -8.49, "y": 31.63, "cluster": "Frequent Buyer"}, {"x": -7.08, "y": -11.46, "cluster": "Frequent Buyer"}, {"x": -10.12, "y": -26.99, "cluster": "Frequent Buyer"}, {"x": -9.76, "y": 31.4, "cluster": "Frequent Buyer"}, {"x": -7.59, "y": -9.0, "cluster": "Frequent Buyer"}, {"x": -36.74, "y": 9.79, "cluster": "High-Value Customer"}, {"x": 21.78, "y": -0.83, "cluster": "Discount-Driven Shopper"}, {"x": 3.74, "y": 13.17, "cluster": "Discount-Driven Shopper"}, {"x": -26.49, "y": -11.44, "cluster": "Frequent Buyer"}, {"x": 56.41, "y": 3.49, "cluster": "Occasional Browser"}, {"x": 33.95, "y": 9.51, "cluster": "Occasional Browser"}, {"x": 2.97, "y": -2.9, "cluster": "Discount-Driven Shopper"}, {"x": 6.79, "y": -8.47, "cluster": "Occasional Browser"}, {"x": 15.81, "y": 12.18, "cluster": "Discount-Driven Shopper"}];
+const clusterProfile = [{"label": "High-Value Customer", "purchase_frequency": 10.0, "avg_order_value": 120.64, "browsing_time_minutes": 17.82, "discount_usage_rate": 0.08, "cart_abandonment_rate": 0.12, "days_since_last_purchase": 7.04, "count": 249}, {"label": "Discount-Driven Shopper", "purchase_frequency": 7.98, "avg_order_value": 20.29, "browsing_time_minutes": 29.88, "discount_usage_rate": 0.77, "cart_abandonment_rate": 0.42, "days_since_last_purchase": 12.2, "count": 300}, {"label": "Frequent Buyer", "purchase_frequency": 17.95, "avg_order_value": 45.29, "browsing_time_minutes": 24.63, "discount_usage_rate": 0.15, "cart_abandonment_rate": 0.12, "days_since_last_purchase": 3.16, "count": 451}, {"label": "Occasional Browser", "purchase_frequency": 2.01, "avg_order_value": 29.43, "browsing_time_minutes": 40.04, "discount_usage_rate": 0.25, "cart_abandonment_rate": 0.68, "days_since_last_purchase": 45.12, "count": 500}];
+const pcaCumVar = [0.2917, 0.3995, 0.5045, 0.6087, 0.7079, 0.7954, 0.8579, 0.9067, 0.939, 0.9664, 0.9811, 0.993, 1.0];
+const deviceDist = {"mobile": 806, "desktop": 542, "tablet": 152};
+const categoryDist = {"fashion": 452, "electronics": 359, "grocery": 316, "beauty": 222, "home": 151};
+const featureStats = {"purchase_frequency": {"mean": 9.32, "std": 6.76, "min": 0, "max": 28.8}, "avg_order_value": {"mean": 47.51, "std": 36.39, "min": 7.24, "max": 181.46}, "browsing_time_minutes": {"mean": 29.69, "std": 11.34, "min": 2.9, "max": 67.1}, "discount_usage_rate": {"mean": 0.29, "std": 0.26, "min": 0, "max": 0.95}, "cart_abandonment_rate": {"mean": 0.37, "std": 0.26, "min": 0.05, "max": 0.85}, "days_since_last_purchase": {"mean": 19.6, "std": 20.45, "min": 0, "max": 88.3}};
+
+const clusterColors = {
+  "High-Value Customer": "#3D8BFF",
+  "Discount-Driven Shopper": "#F5A623",
+  "Frequent Buyer": "#2EC28B",
+  "Occasional Browser": "#E05C6B"
+};
+const segBlurb = {
+  "High-Value Customer": "Fewer purchases, but big spend — low discount reliance.",
+  "Discount-Driven Shopper": "Buys mostly around discounts and promotions.",
+  "Frequent Buyer": "Buys often and returns quickly after each purchase.",
+  "Occasional Browser": "Browses a lot, abandons carts, rarely converts."
+};
+const segReco = {
+  "High-Value Customer": "Recommended action: prioritize loyalty perks and premium service — protect this high-margin segment from churn.",
+  "Discount-Driven Shopper": "Recommended action: target with time-limited promotions and flash sales to drive conversion.",
+  "Frequent Buyer": "Recommended action: cross-sell and upsell complementary products; introduce a loyalty tier.",
+  "Occasional Browser": "Recommended action: send cart-recovery emails and personalized recommendations to re-engage."
+};
+
+// ---------- NAV ----------
+function goPage(id) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById("page-" + id).classList.add("active");
+  document.querySelectorAll("#navlinks button").forEach(b => b.classList.toggle("active", b.dataset.page === id));
+  window.scrollTo({top:0, behavior:"instant"});
+}
+document.querySelectorAll("#navlinks button").forEach(b => b.addEventListener("click", () => goPage(b.dataset.page)));
+
+// ---------- Segment Cards (Home) ----------
+const segCardsEl = document.getElementById("segCardsHome");
+clusterProfile.forEach(c => {
+  const color = clusterColors[c.label] || "#888";
+  segCardsEl.innerHTML += `
+    <div class="seg-card" style="background:${color}">
+      <h3>${c.label}</h3>
+      <div class="count">${c.count}</div>
+      <div class="rows">
+        Purchase freq: ${c.purchase_frequency}/mo<br>
+        Avg order value: $${c.avg_order_value}<br>
+        Discount usage: ${(c.discount_usage_rate*100).toFixed(0)}%<br>
+        Cart abandon: ${(c.cart_abandonment_rate*100).toFixed(0)}%
+      </div>
+    </div>`;
+});
+
+// ---------- t-SNE Scatter ----------
+(function() {
+  const w = 900, h = 460, pad = 40;
+  const xs = tsnePoints.map(p => p.x), ys = tsnePoints.map(p => p.y);
+  const xMin = Math.min(...xs), xMax = Math.max(...xs);
+  const yMin = Math.min(...ys), yMax = Math.max(...ys);
+  const sx = x => pad + (x - xMin) / (xMax - xMin) * (w - 2*pad);
+  const sy = y => h - pad - (y - yMin) / (yMax - yMin) * (h - 2*pad);
+  let svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;max-height:460px;">`;
+  tsnePoints.forEach(p => {
+    const color = clusterColors[p.cluster] || "#888";
+    svg += `<circle cx="${sx(p.x).toFixed(1)}" cy="${sy(p.y).toFixed(1)}" r="4" fill="${color}" fill-opacity="0.75"/>`;
+  });
+  svg += `</svg>`;
+  document.getElementById("tsneChart").innerHTML = svg;
+  let legend = "";
+  Object.keys(clusterColors).forEach(k => {
+    legend += `<span><span class="legenddot" style="background:${clusterColors[k]}"></span>${k}</span>`;
+  });
+  document.getElementById("tsneLegend").innerHTML = legend;
+})();
+
+// ---------- PCA Chart ----------
+(function() {
+  const w = 700, h = 300, pad = 44;
+  const n = pcaCumVar.length;
+  const sx = i => pad + i/(n-1) * (w - 2*pad);
+  const sy = v => h - pad - v * (h - 2*pad);
+  let path = "";
+  pcaCumVar.forEach((v,i) => { path += (i===0?"M":"L") + sx(i).toFixed(1) + "," + sy(v).toFixed(1) + " "; });
+  let svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;">`;
+  svg += `<line x1="${pad}" y1="${sy(0.9).toFixed(1)}" x2="${w-pad}" y2="${sy(0.9).toFixed(1)}" stroke="#ccc" stroke-dasharray="4,4"/>`;
+  svg += `<text x="${w-pad}" y="${sy(0.9)-6}" text-anchor="end" font-size="11" fill="#888">90% variance</text>`;
+  svg += `<path d="${path}" fill="none" stroke="#2E5EAA" stroke-width="2.5"/>`;
+  pcaCumVar.forEach((v,i) => { svg += `<circle cx="${sx(i).toFixed(1)}" cy="${sy(v).toFixed(1)}" r="3.5" fill="#2E5EAA"/>`; });
+  svg += `<line x1="${pad}" y1="${h-pad}" x2="${w-pad}" y2="${h-pad}" stroke="#888"/>`;
+  svg += `<line x1="${pad}" y1="${pad-10}" x2="${pad}" y2="${h-pad}" stroke="#888"/>`;
+  svg += `<text x="${w/2}" y="${h-8}" text-anchor="middle" font-size="11" fill="#5A6472">Number of Components</text>`;
+  svg += `</svg>`;
+  document.getElementById("pcaChart").innerHTML = svg;
+})();
+
+// ---------- Feature bars ----------
+const featureKeys = [
+  ["purchase_frequency", "Purchase Frequency"],
+  ["avg_order_value", "Avg Order Value ($)"],
+  ["discount_usage_rate", "Discount Usage Rate"],
+  ["cart_abandonment_rate", "Cart Abandonment Rate"],
+  ["days_since_last_purchase", "Days Since Last Purchase"]
+];
+let activeFeature = featureKeys[0][0];
+function renderFeatureBars() {
+  const maxVal = Math.max(...clusterProfile.map(c => c[activeFeature]));
+  let html = "";
+  clusterProfile.forEach(c => {
+    const pct = (c[activeFeature] / maxVal * 100).toFixed(1);
+    const color = clusterColors[c.label] || "#888";
+    html += `<div class="bar-row">
+      <div class="label">${c.label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div style="width:50px;text-align:right;font-weight:600;">${c[activeFeature]}</div>
+    </div>`;
+  });
+  document.getElementById("featureBars").innerHTML = html;
+}
+function renderFeatureTabs() {
+  let html = "";
+  featureKeys.forEach(([key,label]) => {
+    html += `<button class="tabbtn ${key===activeFeature?'active':''}" data-key="${key}">${label}</button>`;
+  });
+  document.getElementById("featureTabs").innerHTML = html;
+  document.querySelectorAll(".tabbtn").forEach(btn => {
+    btn.addEventListener("click", () => { activeFeature = btn.dataset.key; renderFeatureTabs(); renderFeatureBars(); });
+  });
+}
+renderFeatureTabs();
+renderFeatureBars();
+
+// ---------- Device / Category bars ----------
+function renderDist(obj, elId, color) {
+  const max = Math.max(...Object.values(obj));
+  let html = "";
+  Object.entries(obj).sort((a,b)=>b[1]-a[1]).forEach(([k,v]) => {
+    const pct = (v/max*100).toFixed(1);
+    html += `<div class="bar-row">
+      <div class="label" style="text-transform:capitalize;">${k}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div style="width:50px;text-align:right;font-weight:600;">${v}</div>
+    </div>`;
+  });
+  document.getElementById(elId).innerHTML = html;
+}
+renderDist(deviceDist, "deviceBars", "#2E5EAA");
+renderDist(categoryDist, "categoryBars", "#3D8BFF");
+
+// ---------- PREDICTOR ----------
+const predictFields = ["purchase_frequency","avg_order_value","browsing_time_minutes","discount_usage_rate","cart_abandonment_rate","days_since_last_purchase"];
+predictFields.forEach(f => {
+  const el = document.getElementById(f);
+  const disp = document.getElementById("val_" + f);
+  el.addEventListener("input", () => { disp.textContent = el.value; });
+});
+
+function zscore(val, key) {
+  const s = featureStats[key];
+  return (val - s.mean) / s.std;
+}
+
+function predictSegment() {
+  const input = {};
+  predictFields.forEach(f => { input[f] = parseFloat(document.getElementById(f).value); });
+
+  // Build standardized vector for input and each cluster centroid (using shared feature keys present in both)
+  const keys = ["purchase_frequency","avg_order_value","discount_usage_rate","cart_abandonment_rate","days_since_last_purchase"];
+  const inputVec = keys.map(k => zscore(input[k], k));
+
+  const dists = clusterProfile.map(c => {
+    const vec = keys.map(k => zscore(c[k], k));
+    const d = Math.sqrt(vec.reduce((sum, v, i) => sum + (v - inputVec[i])**2, 0));
+    return { label: c.label, dist: d };
+  });
+
+  // Convert distances to similarity scores (softmax-like on inverse distance)
+  const invs = dists.map(d => 1 / (d.dist + 0.15));
+  const totalInv = invs.reduce((a,b) => a+b, 0);
+  const results = dists.map((d,i) => ({ label: d.label, conf: invs[i]/totalInv }))
+                        .sort((a,b) => b.conf - a.conf);
+
+  const top = results[0];
+  const color = clusterColors[top.label] || "#888";
+  const box = document.getElementById("resultBox");
+  box.style.background = color;
+  box.classList.add("show");
+  document.getElementById("resSegName").textContent = top.label;
+  document.getElementById("resSegSub").textContent = segBlurb[top.label];
+  document.getElementById("resReco").textContent = segReco[top.label];
+
+  let rows = "";
+  results.forEach(r => {
+    rows += `<div style="margin-bottom:.5rem;">
+      <div class="conf-row"><span>${r.label}</span><span>${(r.conf*100).toFixed(1)}%</span></div>
+      <div class="confbar"><div class="confbar-fill" style="width:${(r.conf*100).toFixed(1)}%"></div></div>
+    </div>`;
+  });
+  document.getElementById("confRows").innerHTML = rows;
+  box.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+</script>
+</body>
+</html>
